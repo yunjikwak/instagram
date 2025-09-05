@@ -15,10 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
     public enum UserStatus {
-        ACTIVATE,
+        ACTIVE,
         DELETED,
         DORMANT,
-        BANNED
+        BANNED,
+        NEEDS_TERMS_AGREEMENT
     }
     public enum ProviderType {
         LOCAL,
@@ -68,7 +69,7 @@ public class User {
                 name,
                 phoneNumber,
                 birthDay,
-                UserStatus.ACTIVATE,
+                UserStatus.ACTIVE,
                 LocalDateTime.now(),
                 null,
                 LocalDateTime.now()
@@ -85,11 +86,20 @@ public class User {
                 name,
                 phoneNumber,
                 birthDay,
-                UserStatus.ACTIVATE,
+                UserStatus.ACTIVE,
                 LocalDateTime.now(),
                 null,
                 LocalDateTime.now()
         );
+    }
+
+    public void updateTermAgreement() {
+        this.status = UserStatus.ACTIVE;
+        this.termsAgreedAt = LocalDateTime.now();
+    }
+
+    public void requireTermsAgreement() {
+        this.status = UserStatus.NEEDS_TERMS_AGREEMENT;
     }
 
 }

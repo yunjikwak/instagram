@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.controller.dto.UserCreateRequestDto;
 import com.example.demo.controller.dto.UserLocalCreateRequestDto;
+import com.example.demo.controller.dto.UserLocalLoginRequestDto;
 import com.example.demo.controller.dto.UserResponseDto;
 import com.example.demo.controller.dto.UserSocialCreateRequestDto;
 import com.example.demo.service.UserService;
@@ -23,14 +23,26 @@ public class UserController {
     }
 
     @PostMapping("/local")
+    public ResponseEntity<UserResponseDto> localLogin(@RequestBody @Valid UserLocalLoginRequestDto request) {
+        UserResponseDto user = userService.localLogin(request);
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/signup/local")
     public ResponseEntity<UserResponseDto> localSignUp(@RequestBody @Valid UserLocalCreateRequestDto request) {
         UserResponseDto user = userService.localSignUp(request);
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping("/social")
+    @PostMapping("/signup/social")
     public ResponseEntity<UserResponseDto> socialSignUp(@RequestBody @Valid UserSocialCreateRequestDto request) {
         UserResponseDto user = userService.socialSignUp(request);
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/{id}/terms")
+    public ResponseEntity<Void> agreeTerms(@PathVariable Integer id) {
+        userService.agreeTerms(id);
+        return ResponseEntity.ok().build();
     }
 }
