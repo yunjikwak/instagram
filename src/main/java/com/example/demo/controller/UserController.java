@@ -39,4 +39,10 @@ public class UserController {
         UserResponseDto user = userService.socialSignUp(request);
         return ResponseEntity.ok(user);
     }
+
+    @PostMapping("/{id}/terms")
+    public ResponseEntity<Void> agreeTerms(@PathVariable Integer id) {
+        userService.agreeTerms(id);
+        return ResponseEntity.ok().build();
+    }
 }

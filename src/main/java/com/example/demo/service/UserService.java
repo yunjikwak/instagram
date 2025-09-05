@@ -12,6 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -65,14 +67,44 @@ public class UserService {
         return UserResponseDto.from(created);
     }
 
+    @Transactional
     public UserResponseDto localLogin(@Valid UserLocalLoginRequestDto request) {
+        // 아이디 확인
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("아이디가 존재하지 않습니다."));
 
+        // 비밀번호 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
+        // 계정 상태 확인
+        switch (user.getStatus()) {
+            case BANNED:
+            case DELETED:
+                throw new IllegalArgumentException("로그인 불가");
+            case DORMANT:
+                throw new IllegalArgumentException("휴먼 계정");
+            case NEEDS_TERMS_AGREEMENT:
+                throw new IllegalArgumentException("약관 동의 필요");
+            case ACTIVE:
+                // check
+                LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+                if (user.getTermsAgreedAt().isBefore(oneYearAgo)) {
+                    user.requireTermsAgreement();
+                    userRepository.save(user);
+                    throw new IllegalArgumentException("약관 동의 필요");
+                }
+                break;
+        }
+
         return UserResponseDto.from(user);
+    }
+
+    @Transactional
+    public void agreeTerms(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계정"));
+        user.updateTermAgreement();
     }
 }
