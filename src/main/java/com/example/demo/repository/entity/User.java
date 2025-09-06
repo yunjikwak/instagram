@@ -5,15 +5,25 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User implements UserDetails {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList();
+    }
+
     public enum UserStatus {
         ACTIVE,
         DELETED,
@@ -76,12 +86,31 @@ public class User {
         );
     }
 
-    public static User createSocialUser(ProviderType provider, String socialId, String name, String phoneNumber, LocalDate birthDay) {
+    public static User createInitialSocialUser(ProviderType provider, String socialId, String name) {
+        String username = provider.name() + "_" + socialId;
         return new User(
                 null,
                 provider,
                 socialId,
+                username, // UNIQUE 제약조건을 위한 고유 값
                 null,
+                name,
+                null,
+                null,
+                UserStatus.NEEDS_TERMS_AGREEMENT, // 임시 상태, 추가 정보 입력해야함
+                LocalDateTime.now(),
+                null,
+                null
+        );
+    }
+
+    public static User createSocialUser(ProviderType provider, String socialId, String name, String phoneNumber, LocalDate birthDay) {
+        String username = provider.name() + "_" + socialId;
+        return new User(
+                null,
+                provider,
+                socialId,
+                username,
                 null,
                 name,
                 phoneNumber,
@@ -93,6 +122,14 @@ public class User {
         );
     }
 
+    public void addSocialSignUp(String name, String phoneNumber, LocalDate birthDay) {
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.birthDay = birthDay;
+        this.status = UserStatus.ACTIVE;
+        this.termsAgreedAt = LocalDateTime.now();
+    }
+
     public void updateTermAgreement() {
         this.status = UserStatus.ACTIVE;
         this.termsAgreedAt = LocalDateTime.now();
@@ -100,6 +137,10 @@ public class User {
 
     public void requireTermsAgreement() {
         this.status = UserStatus.NEEDS_TERMS_AGREEMENT;
+    }
+
+    public void withdraw() {
+        this.status = UserStatus.DELETED;
     }
 
 }

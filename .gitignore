@@ -1,6 +1,7 @@
 *.log
 docker-data/
 .env
+**/bak/
 
 HELP.md
 .gradle

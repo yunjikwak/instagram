@@ -45,4 +45,10 @@ public class UserController {
         userService.agreeTerms(id);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> withdrawUser(@PathVariable Integer id) {
+        userService.withdrawUser(id);
+        return ResponseEntity.noContent().build();
+    }
 }

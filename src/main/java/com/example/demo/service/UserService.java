@@ -107,4 +107,17 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계정"));
         user.updateTermAgreement();
     }
+
+    @Transactional
+    public void withdrawUser(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계정"));
+
+        // 로그인 한 본인 계정인지 확인 로직 추가하기
+
+        if (user.getStatus() == User.UserStatus.DELETED) {
+            throw new IllegalStateException("이미 탈퇴 처리된 계정입니다.");
+        }
+        user.withdraw();
+    }
 }
