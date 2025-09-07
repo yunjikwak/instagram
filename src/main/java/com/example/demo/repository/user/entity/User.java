@@ -1,5 +1,6 @@
-package com.example.demo.repository.entity;
+package com.example.demo.repository.user.entity;
 
+import com.example.demo.repository.post.entity.Post;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -63,10 +65,14 @@ public class User implements UserDetails {
 
     // 양방향이어야 하는 것들 고르기
     // 게시글
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user",
+            cascade = CascadeType.ALL, // 부모 변화 -> 자식 변화
+            orphanRemoval = true) // 부모 잃음 -> 제거
+    private List<Post> posts;
     // 댓글
     // 좋아요
     // 구독
-    // 결제 기록
+    // 결제 기록 <- 이것도 양방향?? 왜??
     // 신고
 
     public static User createLocalUser(String username, String password, String name, String phoneNumber, LocalDate birthDay) {
@@ -81,8 +87,9 @@ public class User implements UserDetails {
                 birthDay,
                 UserStatus.ACTIVE,
                 LocalDateTime.now(),
-                null,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                new ArrayList<>()
         );
     }
 
@@ -99,8 +106,9 @@ public class User implements UserDetails {
                 null,
                 UserStatus.NEEDS_TERMS_AGREEMENT, // 임시 상태, 추가 정보 입력해야함
                 LocalDateTime.now(),
+                LocalDateTime.now(),
                 null,
-                null
+                new ArrayList<>()
         );
     }
 
@@ -117,8 +125,9 @@ public class User implements UserDetails {
                 birthDay,
                 UserStatus.ACTIVE,
                 LocalDateTime.now(),
-                null,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                new ArrayList<>()
         );
     }
 

@@ -1,7 +1,7 @@
 package com.example.demo.security;
 
-import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.entity.User;
+import com.example.demo.repository.user.UserRepository;
+import com.example.demo.repository.user.entity.User;
 import com.example.demo.security.vo.OAuth2KakaoResource;
 import com.example.demo.security.vo.OAuth2Resource;
 import com.example.demo.security.vo.OAuth2UserDetails;
@@ -48,7 +48,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         if (userOptional.isPresent()) { // 이미 사용자 존재 -> 가입되어있음
             user = userOptional.get(); // db에서 꺼낸 값으로 확정
         } else { // 신규회원
-            user = User.createInitialSocialUser( // 임시 회원 생성
+            user = User.createInitialSocialUser( // 임시 회원 생성 -> db에 TF로 할 수 O
                     providerType,
                     socialId,
                     resource.getName() // kakao nickname

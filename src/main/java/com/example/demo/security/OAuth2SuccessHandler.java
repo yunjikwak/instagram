@@ -1,6 +1,6 @@
 package com.example.demo.security;
 
-import com.example.demo.repository.entity.User;
+import com.example.demo.repository.user.entity.User;
 import com.example.demo.security.vo.OAuth2UserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

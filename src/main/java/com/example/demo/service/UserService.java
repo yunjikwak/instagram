@@ -1,11 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.controller.dto.UserLocalCreateRequestDto;
-import com.example.demo.controller.dto.UserLocalLoginRequestDto;
-import com.example.demo.controller.dto.UserResponseDto;
-import com.example.demo.controller.dto.UserSocialCreateRequestDto;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.entity.User;
+import com.example.demo.controller.user.dto.UserLocalCreateRequestDto;
+import com.example.demo.controller.user.dto.UserLocalLoginRequestDto;
+import com.example.demo.controller.user.dto.UserResponseDto;
+import com.example.demo.controller.user.dto.UserSocialCreateRequestDto;
+import com.example.demo.repository.user.UserRepository;
+import com.example.demo.repository.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -55,6 +55,10 @@ public class UserService {
         if (userRepository.existsByProviderAndSocialId (request.getProviderType(), request.getSocialId())) {
             throw new IllegalArgumentException("이미 사용 중인 소셜 아이디");
         }
+
+        // 정보 입력.. 이미
+        // 정보 입력 중간만
+            // .. 막아야함 이미 JWT 발행됨
 
         User user = User.createSocialUser(
                 request.getProviderType(),

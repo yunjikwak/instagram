@@ -1,7 +1,7 @@
 package com.example.demo.scheduler;
 
-import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.entity.User;
+import com.example.demo.repository.user.UserRepository;
+import com.example.demo.repository.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

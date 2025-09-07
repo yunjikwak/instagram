@@ -1,8 +1,6 @@
-package com.example.demo.repository;
+package com.example.demo.repository.user;
 
-import com.example.demo.repository.entity.User;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.example.demo.repository.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
