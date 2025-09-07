@@ -1,6 +1,6 @@
-package com.example.demo.controller.dto;
+package com.example.demo.controller.user.dto;
 
-import com.example.demo.repository.entity.User;
+import com.example.demo.repository.user.entity.User;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.example.demo.security.vo;
 
-import com.example.demo.repository.entity.User;
+import com.example.demo.repository.user.entity.User;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

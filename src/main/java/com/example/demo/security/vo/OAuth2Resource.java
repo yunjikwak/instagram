@@ -1,6 +1,6 @@
 package com.example.demo.security.vo;
 
-import com.example.demo.repository.entity.User;
+import com.example.demo.repository.user.entity.User;
 
 import java.util.Map;
 
