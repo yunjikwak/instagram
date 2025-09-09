@@ -43,6 +43,10 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes;
 
+    // attachment
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attachment> attachments;
+
     public static Post create(String content, User user) {
         return new Post(
                 null,
@@ -62,5 +66,10 @@ public class Post {
     public void update(String content) {
         this.content = content;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void addAttachment(Attachment attachment) {
+        this.attachments.add(attachment);
+        attachment.setPost(this);
     }
 }
