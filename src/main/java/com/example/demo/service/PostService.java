@@ -4,6 +4,7 @@ import com.example.demo.controller.post.dto.PostCreateRequestDto;
 import com.example.demo.controller.post.dto.PostResponseDto;
 import com.example.demo.controller.post.dto.PostWithLikeCountResponseDto;
 import com.example.demo.repository.post.PostRepository;
+import com.example.demo.repository.post.entity.Attachment;
 import com.example.demo.repository.post.entity.Post;
 import com.example.demo.repository.user.UserRepository;
 import com.example.demo.repository.user.entity.User;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,6 +23,7 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final AttachmentService attachmentService;
 
     @Transactional(readOnly = true)
     public PostResponseDto findById(Integer id) {
@@ -35,7 +38,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto save(PostCreateRequestDto request) {
+    public PostResponseDto save(PostCreateRequestDto request, List<MultipartFile> files) {
         // 작성자 조회
         Integer userId = request.getUserId();
         User user = userRepository.findById(userId)
@@ -47,6 +50,27 @@ public class PostService {
                 request.getContent(),
                 user
         );
+
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            // 파일 업로드
+            String filePath = attachmentService.uploadFile(file);
+
+            // 임시 이미지 고정
+            Attachment.AttachmentType type = Attachment.AttachmentType.IMAGE;
+
+            // attachment 엔티티 생성
+            Attachment attachment = Attachment.create(
+                    type,
+                    filePath,
+                    i+1,
+                    post
+            );
+
+            // post에도 추가하기
+            post.addAttachment(attachment);
+        }
+
         Post created = postRepository.save(post);
         return PostResponseDto.from(created);
     }

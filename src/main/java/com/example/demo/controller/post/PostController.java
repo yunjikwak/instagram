@@ -3,6 +3,8 @@ package com.example.demo.controller.post;
 import com.example.demo.controller.post.dto.PostCreateRequestDto;
 import com.example.demo.controller.post.dto.PostResponseDto;
 import com.example.demo.controller.post.dto.PostWithLikeCountResponseDto;
+import com.example.demo.repository.user.entity.User;
+import com.example.demo.service.LikeService;
 import com.example.demo.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,7 +13,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final LikeService likeService;
 
     // read
     @GetMapping("/{id}")
@@ -42,10 +48,20 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    // write
+    // create
     @PostMapping("")
-    public ResponseEntity<PostResponseDto> create(@RequestBody PostCreateRequestDto request) {
-        PostResponseDto post = postService.save(request);
+    public ResponseEntity<PostResponseDto> create(
+            @RequestPart("request") PostCreateRequestDto request,
+            @RequestPart("files") List<MultipartFile> files
+    ) {
+        if (files == null || files.isEmpty()) {
+            throw new IllegalArgumentException("첨부파일 한 개 이상 필요");
+        }
+        if (files.size() > 10) {
+            throw new IllegalArgumentException("파일이 10개 초과");
+        }
+
+        PostResponseDto post = postService.save(request, files);
         return ResponseEntity.ok(post);
     }
 
@@ -63,5 +79,27 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    // like
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Void> like(@PathVariable Integer id) {
+        // 사용자 인증 정보 꺼내기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
+        Integer myId = principal.getId();
+
+        likeService.like(myId, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity<Void> unlike(@PathVariable Integer id) {
+        // 사용자 인증 정보 꺼내기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
+        Integer myId = principal.getId();
+
+        likeService.unlike(myId, id);
+        return ResponseEntity.ok().build();
+    }
 
 }
