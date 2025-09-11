@@ -2,6 +2,8 @@ package com.example.demo.repository.post.entity;
 
 import com.example.demo.repository.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -55,6 +57,7 @@ public class Post {
                 LocalDateTime.now(), // 업데이트 시각도 초기 시각으로 시작
                 LocalDateTime.now(),
                 user,
+                new ArrayList<>(),
                 new ArrayList<>()
         );
     }
@@ -63,7 +66,11 @@ public class Post {
         this.status = PostStatus.DELETED;
     }
 
-    public void update(String content) {
+    public void update(
+            @NotNull
+            @Size(min = 1, max = 200)
+            String content
+    ) {
         this.content = content;
         this.updatedAt = LocalDateTime.now();
     }
