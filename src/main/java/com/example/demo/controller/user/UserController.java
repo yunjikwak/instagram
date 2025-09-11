@@ -17,6 +17,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,23 +32,6 @@ public class UserController {
     public ResponseEntity<UserResponseDto> user(@PathVariable Integer id) {
         UserResponseDto user = userService.findById(id);
         return ResponseEntity.ok(user);
-    }
-
-    @GetMapping("/me/posts")
-    public ResponseEntity<Page<PostWithLikeCountResponseDto>> myPosts(
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        if (pageable == null || pageable.getPageNumber() < 0 || pageable.getPageSize() <= 0) {
-            throw new IllegalArgumentException("잘못된 페이지네이션 값");
-        }
-
-        // 사용자 인증 정보 꺼내기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User principal = (User) authentication.getPrincipal();
-        Integer myId = principal.getId();
-
-        Page<PostWithLikeCountResponseDto> posts = postService.findMyPosts(myId, pageable);
-        return ResponseEntity.ok(posts);
     }
 
     @PostMapping("/local")
@@ -78,5 +62,24 @@ public class UserController {
     public ResponseEntity<Void> withdrawUser(@PathVariable Integer id) {
         userService.withdrawUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/me/posts")
+    public ResponseEntity<Page<PostWithLikeCountResponseDto>> myPosts(
+            @AuthenticationPrincipal User loggedInUser,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        if (pageable == null || pageable.getPageNumber() < 0 || pageable.getPageSize() <= 0) {
+            throw new IllegalArgumentException("잘못된 페이지네이션 값");
+        }
+
+        // 사용자 인증 정보 꺼내기
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User principal = (User) authentication.getPrincipal();
+//        Integer myId = principal.getId();
+        Integer myId = loggedInUser.getId();
+
+        Page<PostWithLikeCountResponseDto> posts = postService.findMyPosts(myId, pageable);
+        return ResponseEntity.ok(posts);
     }
 }

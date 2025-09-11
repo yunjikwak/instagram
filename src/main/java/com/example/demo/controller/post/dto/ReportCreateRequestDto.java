@@ -8,9 +8,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PostCreateRequestDto {
+public class ReportCreateRequestDto {
     @NotNull
     @Size(min = 1, max = 200)
-    private String content;
-//    private Integer userId; <- 인증 정보에서 가져오기
+    private String reason;
 }

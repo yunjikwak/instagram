@@ -1,4 +1,4 @@
-package com.example.demo.controller.post.dto;
+package com.example.demo.controller.post;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,9 +8,14 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PostCreateRequestDto {
+public class CommentCreateRequestDto {
     @NotNull
     @Size(min = 1, max = 200)
     private String content;
-//    private Integer userId; <- 인증 정보에서 가져오기
+
+    // dto로 받는 건 RESTful하지 X
+//    @NotNull
+//    private Integer postId;
+//    @NotNull
+//    private Integer userId;
 }
