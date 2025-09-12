@@ -2,6 +2,7 @@ package com.example.demo.repository.post;
 
 import com.example.demo.controller.post.dto.CommentResponseDto;
 import com.example.demo.controller.post.dto.CommentSimpleResponseDto;
+import com.example.demo.repository.post.entity.Comment;
 import com.example.demo.repository.post.entity.QComment;
 import com.example.demo.repository.post.entity.QPost;
 import com.example.demo.repository.user.entity.QUser;
@@ -37,7 +38,8 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                 ))
                 .from(qc)
                 .leftJoin(qc.user, qu)
-                .where(qc.post.id.eq(postId))
+                .where(qc.post.id.eq(postId)
+                        .and(qc.status.eq(Comment.CommentStatus.ACTIVE)))
                 .orderBy(qc.createdAt.desc())
                 .groupBy(qc.id)
                 .offset(pageable.getOffset())

@@ -1,6 +1,7 @@
 package com.example.demo.controller.post.dto;
 
 import com.example.demo.controller.user.dto.UserSimpleResponseDto;
+import com.example.demo.repository.AttachmentResponseDto;
 import com.example.demo.repository.post.entity.Post;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
@@ -8,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,6 +25,7 @@ public class PostResponseDto {
     private LocalDateTime updatedAt;
 
     private UserSimpleResponseDto user;
+    private List<AttachmentResponseDto> attachments;
 
     public static PostResponseDto from(Post entity) {
         return new PostResponseDto(
@@ -31,7 +34,10 @@ public class PostResponseDto {
                 entity.getStatus(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
-                UserSimpleResponseDto.from(entity.getUser())
+                UserSimpleResponseDto.from(entity.getUser()),
+                entity.getAttachments().stream()
+                        .map(AttachmentResponseDto::from)
+                        .toList()
         );
     }
 

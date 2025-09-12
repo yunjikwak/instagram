@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.controller.post.CommentCreateRequestDto;
+import com.example.demo.common.exception.BaseException;
+import com.example.demo.common.response.BaseResponseStatus;
+import com.example.demo.controller.post.dto.CommentCreateRequestDto;
 import com.example.demo.controller.post.dto.CommentResponseDto;
 import com.example.demo.controller.post.dto.CommentSimpleResponseDto;
 import com.example.demo.repository.post.CommentRepository;
@@ -26,24 +28,37 @@ public class CommentService {
     @Transactional(readOnly = true)
     public CommentResponseDto findById(Integer commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 comment Id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_COMMENT));
+
+        if (comment.getStatus() == Comment.CommentStatus.DELETED) {
+            throw new BaseException(BaseResponseStatus.COMMENT_CONFLICT);
+        }
+
         return CommentResponseDto.from(comment);
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentSimpleResponseDto> findCommentsByPostId(Integer commentId, Pageable pageable) {
-        return commentRepository.findCommentDtosByPostId(commentId, pageable);
+    public Page<CommentSimpleResponseDto> findCommentsByPostId(Integer postId, Pageable pageable) {
+        if (!postRepository.existsById(postId)) {
+            throw new BaseException(BaseResponseStatus.NOT_FIND_POST);
+        }
+        return commentRepository.findCommentDtosByPostId(postId, pageable);
     }
 
     @Transactional
     public CommentResponseDto create(Integer myId, Integer postId, @Valid CommentCreateRequestDto request) {
         // user 조회
         User user = userRepository.findById(myId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_USER));
 
         // post 조회
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_POST));
+
+        // 삭제된 게시물인지 확인
+        if (post.getStatus() == Post.PostStatus.DELETED) {
+            throw new BaseException(BaseResponseStatus.POST_CONFLICT);
+        }
 
         // 댓글 생성
         Comment comment = Comment.create(request.getContent(), post, user);
@@ -53,19 +68,22 @@ public class CommentService {
 
     @Transactional
     public CommentResponseDto createChild(
-            Integer myId, Integer postId, Integer parentId, CommentCreateRequestDto request
+            Integer myId, Integer parentId, CommentCreateRequestDto request
     ) {
         // user 조회
         User user = userRepository.findById(myId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
-
-        // post 조회
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_USER));
 
         // comment 조회
         Comment comment = commentRepository.findById(parentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_COMMENT));
+
+        // 삭제된 댓글인지 확인
+        if (comment.getStatus() == Comment.CommentStatus.DELETED) {
+            throw new BaseException(BaseResponseStatus.COMMENT_CONFLICT);
+        }
+
+        Post post = comment.getPost();
 
         Comment child = Comment.createChild(request.getContent(), post, user, comment);
         comment.addChildComment(child);
@@ -79,11 +97,11 @@ public class CommentService {
     public CommentResponseDto update(Integer myId, Integer commentId, CommentCreateRequestDto request) {
         // comment 조회
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_COMMENT));
 
         // 본인인지 확인
         if (!comment.getUser().getId().equals(myId)) {
-            throw new SecurityException("댓글 수정 권한 없음");
+            throw new BaseException(BaseResponseStatus.FORBIDDEN_ACCESS);
         }
 
         comment.update(request.getContent());
@@ -95,16 +113,16 @@ public class CommentService {
     public void delete(Integer myId, Integer commentId) {
         // comment 조회
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FOUND_COMMENT));
 
         // 본인인지 확인
         if (!comment.getUser().getId().equals(myId)) {
-            throw new SecurityException("댓글 수정 권한 없음");
+            throw new BaseException(BaseResponseStatus.FORBIDDEN_ACCESS);
         }
 
         // 활성화된 상태인지 확인
         if (comment.getStatus() == Comment.CommentStatus.DELETED) {
-            throw new IllegalArgumentException("이미 삭제된 게시글입니다.");
+            throw new BaseException(BaseResponseStatus.COMMENT_CONFLICT);
         }
         comment.changeToDelete();
     }

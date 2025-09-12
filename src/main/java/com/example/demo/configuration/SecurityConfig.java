@@ -32,29 +32,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 //      (3) 인증 및 인가 외 모든 종류의 SecurityFilterChain 보안 설정 규칙 적용
         http.csrf(AbstractHttpConfigurer::disable);
-        http.cors((cors) -> cors.configurationSource(reactConfigurationSource));
-
-//      http.formLogin(AbstractHttpConfigurer::disable);
-        http.formLogin(form -> form
-                .loginPage("/login")
-                .permitAll());
-        http.logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
-//              .logoutSuccessHandler(logoutSuccessHandler())
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .deleteCookies("accessToken")
-                        .clearAuthentication(true)
-        );
-//      http.oauth2Login(Customizer.withDefaults());
+        http.httpBasic(AbstractHttpConfigurer::disable);
+//        http.cors((cors) -> cors.configurationSource(reactConfigurationSource));
         http.oauth2Login(oauth2Login -> oauth2Login
                         .loginPage("/login")
-//              .authorizationEndpoint(endpoint -> endpoint.baseUri("/oauth2/authorization"))
+                // 기본  /oauth2/authorization/{registrationId}
+//              .authorizationEndpoint(endpoint -> endpoint.baseUri("/oauth2/authorization")) // 커스텀 URL
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
         );
-//      http.httpBasic(Customizer.withDefaults());
+
+        http.formLogin(AbstractHttpConfigurer::disable);
         http.addFilterBefore(
                 /* Filter */ new JwtAuthenticationFilter(authenticationManager(http)),
                 /* Target */ JwtAuthorizationFilter.class
@@ -65,9 +53,28 @@ public class SecurityConfig {
         );
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        http.authorizeHttpRequests(request -> request.requestMatchers("/api/login").permitAll());
-        http.authorizeHttpRequests(request -> request.requestMatchers("/api/**").authenticated());
-        http.authorizeHttpRequests(request -> request.requestMatchers("/").authenticated());
+        http.authorizeHttpRequests(auth -> auth
+                // 1. 구체적인 경로 명시
+                .requestMatchers(
+                        "/api/v1/users/signup/local",
+                        "/api/v1/users/signup/social",
+                        "/api/v1/users/local",
+                        // swagger 관련 허용
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        //oauth
+                        "/login/oauth2/**",
+                        "/oauth2/**"
+                ).permitAll() // 인증 없이 허용 경로
+
+                // 2. /api/로 시작하는 나머지는 인증 필요
+                .requestMatchers("/api/**").authenticated()
+
+                // 3. 나머지 모든 요청은 인증 필요
+                .anyRequest().authenticated()
+        );
         return http.build();
     }
 

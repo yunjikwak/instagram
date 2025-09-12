@@ -1,4 +1,4 @@
-package com.example.demo.controller.post;
+package com.example.demo.controller.post.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

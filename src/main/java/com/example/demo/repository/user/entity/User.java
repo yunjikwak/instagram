@@ -2,6 +2,7 @@ package com.example.demo.repository.user.entity;
 
 import com.example.demo.repository.post.entity.Post;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User implements UserDetails {
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList();
@@ -146,6 +148,18 @@ public class User implements UserDetails {
 
     public void requireTermsAgreement() {
         this.status = UserStatus.NEEDS_TERMS_AGREEMENT;
+    }
+
+    public void update(String name, String phoneNumber, LocalDate birthDay) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (phoneNumber != null) {
+            this.phoneNumber = phoneNumber;
+        }
+        if (birthDay != null) {
+            this.birthDay = birthDay;
+        }
     }
 
     public void withdraw() {

@@ -33,6 +33,19 @@ public class JwtProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    public String createAccessToken(Integer userId){
+        Date currentDate = new Date();
+        Date expireDate = new Date(currentDate.getTime() + (expiration * 1000));
+
+        return Jwts.builder()
+                .subject(userId.toString())
+                .claim(JwtAuthenticationProvider.AUTHORITIES_KEY, "ROLE_USER")
+                .signWith(key)
+                .issuedAt(currentDate)
+                .expiration(expireDate)
+                .compact();
+    }
+
     public String generate(Authentication authentication) {
         String username = authentication.getName();
 //      User user = authentication.getPrincipal();

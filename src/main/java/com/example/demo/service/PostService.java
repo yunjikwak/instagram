@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.common.exception.BaseException;
+import com.example.demo.common.response.BaseResponseStatus;
 import com.example.demo.controller.post.dto.PostCreateRequestDto;
 import com.example.demo.controller.post.dto.PostResponseDto;
 import com.example.demo.controller.post.dto.PostWithLikeCountResponseDto;
@@ -28,7 +30,13 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponseDto findById(Integer userId) {
         Post post = postRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_POST));
+
+        // DELETED 확인
+        if (post.getStatus() == Post.PostStatus.DELETED) {
+            throw new BaseException(BaseResponseStatus.POST_CONFLICT);
+        }
+
         return PostResponseDto.from(post);
     }
 
@@ -41,7 +49,7 @@ public class PostService {
     public PostResponseDto create(Integer userId, PostCreateRequestDto request, List<MultipartFile> files) {
         // 작성자 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_USER));
 
         // 작성한 post 저장
             // 이미지 추가하기
@@ -77,15 +85,15 @@ public class PostService {
     @Transactional
     public PostResponseDto update(Integer myId, Integer postId, PostCreateRequestDto request) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_POST));
 
         if (post.getStatus() == Post.PostStatus.DELETED) {
-            throw new IllegalArgumentException("삭제된 게시글");
+            throw new BaseException(BaseResponseStatus.POST_CONFLICT);
         }
 
         // 본인인지 확인
         if (!post.getUser().getId().equals(myId)) {
-            throw new SecurityException("댓글 수정 권한 없음");
+            throw new BaseException(BaseResponseStatus.FORBIDDEN_ACCESS);
         }
 
         post.update(request.getContent());
@@ -95,16 +103,16 @@ public class PostService {
     @Transactional
     public void delete(Integer myId, Integer postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재 하지 않는 id"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_POST));
 
         // 로그인 한 본인 게시글인지 확인하기
         if (!post.getUser().getId().equals(myId)) {
-            throw new SecurityException("댓글 수정 권한 없음");
+            throw new BaseException(BaseResponseStatus.FORBIDDEN_ACCESS);
         }
 
         // 활성화된 상태인지 확인
         if (post.getStatus() == Post.PostStatus.DELETED) {
-            throw new IllegalArgumentException("이미 삭제된 게시글입니다.");
+            throw new BaseException(BaseResponseStatus.POST_CONFLICT);
         }
         post.changeToDelete();
     }

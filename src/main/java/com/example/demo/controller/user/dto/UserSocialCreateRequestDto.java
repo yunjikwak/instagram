@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 public class UserSocialCreateRequestDto {
+    @NotNull
     private User.ProviderType providerType;
 
     @NotNull

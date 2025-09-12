@@ -1,5 +1,7 @@
 package com.example.demo.controller.post;
 
+import com.example.demo.common.response.BaseResponse;
+import com.example.demo.controller.post.dto.CommentCreateRequestDto;
 import com.example.demo.controller.post.dto.CommentResponseDto;
 import com.example.demo.repository.user.entity.User;
 import com.example.demo.service.CommentService;
@@ -7,9 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,16 +19,16 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> comment(@PathVariable Integer id) {
+    public ResponseEntity<BaseResponse<CommentResponseDto>> comment(@PathVariable Integer id) {
         CommentResponseDto comment = commentService.findById(id);
-        return ResponseEntity.ok(comment);
+        return ResponseEntity.ok(new BaseResponse<>(comment));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> update(
+    @PatchMapping("/{id}")
+    public ResponseEntity<BaseResponse<CommentResponseDto>> update(
             @AuthenticationPrincipal User loggedInUser,
             @PathVariable Integer id,
-            @RequestBody CommentCreateRequestDto request
+            @RequestBody @Valid CommentCreateRequestDto request
     )  {
         // 사용자 인증 정보 꺼내기
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -38,23 +38,22 @@ public class CommentController {
         Integer myId = loggedInUser.getId();
 
         CommentResponseDto updatedComment = commentService.update(myId, id, request);
-        return ResponseEntity.ok(updatedComment);
+        return ResponseEntity.ok(new BaseResponse<>(updatedComment));
     }
 
     @PostMapping("/{id}/reply")
-    public ResponseEntity<CommentResponseDto> createReply(
+    public ResponseEntity<BaseResponse<CommentResponseDto>> createReply(
             @AuthenticationPrincipal User loggedInUser,
-            @RequestParam Integer postId,
             @PathVariable Integer id,
             @RequestBody @Valid CommentCreateRequestDto request
     ) {
         Integer myId = loggedInUser.getId();
-        CommentResponseDto comment = commentService.createChild(myId, postId, id, request);
-        return ResponseEntity.ok(comment);
+        CommentResponseDto comment = commentService.createChild(myId, id, request);
+        return ResponseEntity.ok(new BaseResponse<>(comment));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<BaseResponse<Void>> delete(
             @AuthenticationPrincipal User loggedInUser,
             @PathVariable Integer id
     ) {

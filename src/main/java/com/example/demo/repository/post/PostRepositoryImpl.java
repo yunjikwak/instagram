@@ -1,6 +1,7 @@
 package com.example.demo.repository.post;
 
 import com.example.demo.controller.post.dto.PostWithLikeCountResponseDto;
+import com.example.demo.repository.post.entity.Post;
 import com.example.demo.repository.post.entity.QLike;
 import com.example.demo.repository.post.entity.QPost;
 import com.example.demo.repository.user.entity.QUser;
@@ -62,6 +63,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                 .from(qp)
                 .leftJoin(qp.user, qu)
                 .leftJoin(qp.likes, ql)
+                .where(qp.status.eq(Post.PostStatus.ACTIVE)) // visible 한 것들만 가져오기
                 .orderBy(qp.createdAt.desc()) // 최신순
                 .groupBy(qp.id, qp.content, qu.name)
                 .offset(pageable.getOffset())
@@ -93,7 +95,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                 .from(qp)
                 .leftJoin(qp.user, qu)
                 .leftJoin(qp.likes, ql)
-                .where(qu.id.eq(myId))
+                .where(qu.id.eq(myId)
+                        .and(qp.status.eq(Post.PostStatus.ACTIVE))) // visible 만
                 .orderBy(qp.createdAt.desc()) // 최신순
                 .groupBy(qp.id)
                 .offset(pageable.getOffset())

@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.common.exception.BaseException;
+import com.example.demo.common.response.BaseResponseStatus;
 import com.example.demo.repository.post.LikeRepository;
 import com.example.demo.repository.post.PostRepository;
 import com.example.demo.repository.post.entity.Like;
@@ -20,13 +22,18 @@ public class LikeService {
     @Transactional
     public void like(Integer myId, Integer id) {
         User user = userRepository.findById(myId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_USER));
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_POST));
+
+        // deleted 검토
+        if (post.getStatus() == Post.PostStatus.DELETED) {
+            throw new BaseException(BaseResponseStatus.POST_CONFLICT);
+        }
 
         // 좋아요 중복 확인
         if (likeRepository.existsByUserIdAndPostId(myId, id)) {
-            throw new IllegalStateException("이미 좋아요를 눌렀습니다");
+            throw new BaseException(BaseResponseStatus.LIKE_CONFLICT);
         }
 
         Like like = Like.create(user, post);
@@ -43,7 +50,7 @@ public class LikeService {
 
         // 좋아요 존재 확인
         Like like = likeRepository.findByUserIdAndPostId(myId, id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 좋아요 기록"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NOT_FIND_LIKE));
         likeRepository.delete(like);
     }
 }

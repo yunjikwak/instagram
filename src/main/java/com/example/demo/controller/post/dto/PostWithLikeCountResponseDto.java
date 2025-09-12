@@ -6,14 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 public class PostWithLikeCountResponseDto {
     private Integer postId;
     private String content;
     private String authorName;
-    private Integer likeCount;
+    private Long likeCount;
 
-    public static PostWithLikeCountResponseDto from(Integer postId, String content, String authorName, Integer likeCount) {
+    public static PostWithLikeCountResponseDto from(Integer postId, String content, String authorName, Long likeCount) {
         return new PostWithLikeCountResponseDto(
                 postId,
                 content,

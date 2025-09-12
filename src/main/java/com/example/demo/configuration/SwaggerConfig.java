@@ -27,26 +27,34 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi userApi() {
+    public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
-                .group("유저 API")
-                .pathsToMatch("/api/v1/users/**")
+                .group("전체 API")
+                .pathsToMatch("/api/**")
                 .build();
     }
 
-    @Bean
-    public GroupedOpenApi postApi() {
-        return GroupedOpenApi.builder()
-                .group("게시물 API")
-                .pathsToMatch("/api/v1/posts/**")
-                .build();
-    }
-
-    @Bean
-    public GroupedOpenApi commentApi() {
-        return GroupedOpenApi.builder()
-                .group("댓글 API")
-                .pathsToMatch("/api/v1/comments/**")
-                .build();
-    }
+//    @Bean
+//    public GroupedOpenApi userApi() {
+//        return GroupedOpenApi.builder()
+//                .group("유저 API")
+//                .pathsToMatch("/api/v1/users/**")
+//                .build();
+//    }
+//
+//    @Bean
+//    public GroupedOpenApi postApi() {
+//        return GroupedOpenApi.builder()
+//                .group("게시물 API")
+//                .pathsToMatch("/api/v1/posts/**")
+//                .build();
+//    }
+//
+//    @Bean
+//    public GroupedOpenApi commentApi() {
+//        return GroupedOpenApi.builder()
+//                .group("댓글 API")
+//                .pathsToMatch("/api/v1/comments/**")
+//                .build();
+//    }
 }

@@ -1,5 +1,7 @@
 package com.example.demo.security;
 
+import com.example.demo.repository.user.UserRepository;
+import com.example.demo.repository.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -7,6 +9,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -22,12 +25,15 @@ import java.util.Collection;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     public static final String AUTHORITIES_KEY = "roles";
 
     @Value("${jwt.secret}")
     private String secretKey;
+
+    private final UserRepository userRepository;
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
@@ -73,7 +79,16 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
             log.error(error, illegalArgumentException);
             throw new JwtInvalidException(error, illegalArgumentException);
         }
-        return new JwtAuthenticationToken(claims.getSubject(), getAuthoritiesFromToken(claims));
+
+        Integer userId = Integer.valueOf(claims.getSubject());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new JwtInvalidException("user not found"));
+
+        var authorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+
+        return new JwtAuthenticationToken(user, authorities);
     }
 
     @Override
