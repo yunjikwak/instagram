@@ -3,10 +3,10 @@
 ## 🚀 배포 서버 및 API 명세
 
 - **서버 주소 (EC2 배포):**
-  - http://3.34.126.183:8080
+  - http://52.79.227.126:8080
 
 - **Swagger API 명세서:**  
-  - http://3.34.126.183:8080/swagger-ui/index.html#/
+  - http://52.79.227.126:8080/swagger-ui/index.html
     
 - **Postman:**  
   - [json collections](./instagram.postman_collection.json)
